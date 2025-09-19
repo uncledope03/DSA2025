@@ -1,0 +1,33 @@
+I adds the ability to store extra details about an asset. 
+They let the system keep track of the parts of an asset   and important dates  for maintenance. 
+This helps know what an asset is made of and when it needs servicing.
+
+ 
+
+// Add component
+resource function post [string assetTag]/components(string key, string value) returns http:Response|error {
+    http:Response response = createCorsResponse();
+    
+    if assetDB.hasKey(assetTag)) {
+        assetDB[assetTag].components[key] = value;
+        response.setTextPayload("Component added!");
+        return response;
+    }
+    response.statusCode = 404;
+    response.setTextPayload("Asset not found!");
+    return response;
+}
+
+// Add schedule
+resource function post [string assetTag]/schedules(string key, string dueDate) returns http:Response|error {
+    http:Response response = createCorsResponse();
+    
+    if assetDB.hasKey(assetTag)) {
+        assetDB[assetTag].schedules[key] = dueDate;
+        response.setTextPayload("Schedule added!");
+        return response;
+    }
+    response.statusCode = 404;
+    response.setTextPayload("Asset not found!");
+    return response;
+}
