@@ -1,0 +1,64 @@
+I was is responsible for adding the WorkOrder functionality to the system, which allows each asset to
+have maintenance or repair jobs linked to it. 
+This includes creating new work orders (POST /assets/{assetTag}/workorders), 
+retrieving all work orders for a given asset (GET /assets/{assetTag}/workorders), 
+and updating the details or status of a specific work order (PUT /assets/{assetTag}/workorders/{id}). 
+These endpoints make the system more practical by connecting assets to real-world maintenance tasks,
+ensuring that their usage, servicing, and repair history can be properly tracked and managed.
+
+
+ WorkOrders
+
+
+Responsible for extending assets with work orders (maintenance, repair jobs, etc.).
+
+POST /assets/{assetTag}/workorders → Add work order
+
+GET /assets/{assetTag}/workorders → Get all work orders
+
+PUT /assets/{assetTag}/workorders/{id} → Update work order
+
+Code (to be added by Person D):
+
+ 
+
+// Add new work order
+resource function post [string assetTag]/workorders(WorkOrder order) returns http:Response|error {
+    http:Response response = createCorsResponse();
+    
+    if assetDB.hasKey(assetTag) {
+        assetDB[assetTag].workOrders[order.id] = order;
+        response.setTextPayload("WorkOrder added!");
+        return response;
+    }
+    response.statusCode = 404;
+    response.setTextPayload("Asset not found!");
+    return response;
+}
+
+// Get all work orders for an asset
+resource function get [string assetTag]/workorders() returns http:Response|error {
+    http:Response response = createCorsResponse();
+    
+    if assetDB.hasKey(assetTag) {
+        response.setJsonPayload(assetDB[assetTag].workOrders);
+        return response;
+    }
+    response.statusCode = 404;
+    response.setTextPayload("Asset not found!");
+    return response;
+}
+
+// Update  
+resource function put [string assetTag]/workorders/[string id](WorkOrder updated) returns http:Response|error {
+    http:Response response = createCorsResponse();
+    
+    if assetDB.hasKey(assetTag) && assetDB[assetTag].workOrders.hasKey(id) {
+        assetDB[assetTag].workOrders[id] = updated;
+        response.setTextPayload("WorkOrder updated!");
+        return response;
+    }
+    response.statusCode = 404;
+    response.setTextPayload("WorkOrder not found!");
+    return response;
+}
