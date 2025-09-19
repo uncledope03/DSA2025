@@ -1,0 +1,86 @@
+I was the one is responsible for building the core foundation of the system, 
+since everything revolves around managing assets. Their work covers the full set of CRUD operations (Create, Read, Update, Delete) for assets. 
+This means they create the API endpoints to add new assets to the database, fetch all existing assets, 
+retrieve details of a single asset using its unique assetTag, update an existing asset’s information,
+and remove an asset completely. In short, Person A ensures that the system can store, retrieve, modify, 
+and delete the main asset records — making their part the central backbone of the whole project.
+
+Asset CRUD (Core API)
+
+Responsible for the main Asset record.
+Implements CRUD endpoints:
+
+POST /assets → Add asset
+
+GET /assets → Get all assets
+
+GET /assets/{assetTag} → Get one asset
+
+PUT /assets/{assetTag} → Update asset
+
+DELETE /assets/{assetTag} → Delete asset
+ 
+
+// Create a asset
+resource function post .(Asset asset) returns http:Response|error {
+    http:Response response = createCorsResponse();
+    
+    if assetDB.hasKey(asset.assetTag) {
+        response.setTextPayload("Asset already exists!");
+        response.statusCode = 400;
+        return response;
+    }
+    assetDB[asset.assetTag] = asset;
+    response.setTextPayload("Asset added successfully!");
+    response.statusCode = 201;
+    return response;
+}
+
+// Get all asset
+resource function get .() returns http:Response|error {
+    http:Response response = createCorsResponse();
+    Asset[] assets = from var [key, value] in assetDB.entries() select value;
+    response.setJsonPayload(assets);
+    return response;
+}
+
+// Get asset by assetTag
+resource function get [string assetTag]() returns http:Response|error {
+    http:Response response = createCorsResponse();
+    
+    if assetDB.hasKey(assetTag) {
+        response.setJsonPayload(assetDB[assetTag]);
+        return response;
+    }
+    response.statusCode = 404;
+    response.setTextPayload("Asset not found");
+    return response;
+}
+
+// Update asset
+resource function put [string assetTag](Asset updated) returns http:Response|error {
+    http:Response response = createCorsResponse();
+    
+    if assetDB.hasKey(assetTag) {
+        assetDB[assetTag] = updated;
+        response.setTextPayload("Asset updated successfully!");
+        return response;
+    }
+    response.statusCode = 404;
+    response.setTextPayload("Asset not found!");
+    return response;
+}
+
+// Delete asset
+resource function delete [string assetTag]() returns http:Response|error {
+    http:Response response = createCorsResponse();
+    
+    if assetDB.hasKey(assetTag) {
+        _ = assetDB.remove(assetTag);
+        response.setTextPayload("Asset removed successfully!");
+        return response;
+    }
+    response.statusCode = 404;
+    response.setTextPayload("Asset not found!");
+    return response;
+}
