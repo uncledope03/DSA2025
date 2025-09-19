@@ -1,4 +1,4 @@
-I was the one is responsible for building the core foundation of the system, 
+I was the one who is responsible for building the core foundation of the system, 
 since everything revolves around managing assets. Their work covers the full set of CRUD operations (Create, Read, Update, Delete) for assets. 
 This means they create the API endpoints to add new assets to the database, fetch all existing assets, 
 retrieve details of a single asset using its unique assetTag, update an existing asset’s information,
