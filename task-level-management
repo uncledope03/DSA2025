@@ -1,0 +1,48 @@
+In   charge of managing the individual tasks within a work order. Since each work order may contain multiple smaller jobs (tasks), this person adds endpoints that allow adding new tasks, viewing all tasks under a specific work order, and updating task details such as description or status.
+ 
+
+ 
+resource function post [string assetTag]/workorders/[string id]/tasks(Task task) returns http:Response|error {
+    http:Response response = createCorsResponse();
+    
+    if assetDB.hasKey(assetTag) && assetDB[assetTag].workOrders.hasKey(id) {
+        assetDB[assetTag].workOrders[id].tasks.push(task);
+        response.setTextPayload("Task added!");
+        return response;
+    }
+    response.statusCode = 404;
+    response.setTextPayload("WorkOrder not found!");
+    return response;
+}
+
+// Get all tasks for a work order
+resource function get [string assetTag]/workorders/[string id]/tasks() returns http:Response|error {
+    http:Response response = createCorsResponse();
+    if assetDB.hasKey(assetTag) && assetDB[assetTag].workOrders.hasKey(id) {
+        response.setJsonPayload(assetDB[assetTag].workOrders[id].tasks);
+        return response;
+    }
+    response.statusCode = 404;
+    response.setTextPayload("WorkOrder not found!");
+    return response;
+}
+
+// Update a specific task
+resource function put [string assetTag]/workorders/[string id]/tasks/[string taskId](Task updated) returns http:Response|error {
+    http:Response response = createCorsResponse();
+    
+    if assetDB.hasKey(assetTag) && assetDB[assetTag].workOrders.hasKey(id) {
+        Task[] tasks = assetDB[assetTag].workOrders[id].tasks;
+        foreach var i in 0..<tasks.length() {
+            if tasks[i].id == taskId {
+                assetDB[assetTag].workOrders[id].tasks[i] = updated;
+                response.setTextPayload("Task updated!");
+                return response;
+            }
+        } 
+}
+    response.statusCode = 404;
+    response.setTextPayload("Task not found!");
+    return response;
+}
+    }
