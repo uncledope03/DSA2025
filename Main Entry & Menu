@@ -1,0 +1,65 @@
+Responsible for starting the program and handling user choices.
+This part shows the menu, reads the user’s choice, and decides whether to run the server,
+client demo, local demo, or interactive menu.
+
+
+import ballerina/io;
+
+public function main() returns error? {
+    io:println(" Car Rental System - SUBMISSION READY");
+    io:println("=======================================");
+
+    initializeSampleData();
+
+    // Show menu options
+    io:println("\nChoose an option:");
+    io:println("1. Run Service Server (Start Server)");
+    io:println("2. Run Service Client Demo");
+    io:println("3. Run Local Demo Mode");
+    io:println("4. Run Interactive Menu");
+
+    string choice = io:readln("Enter your choice (1-4): ");
+
+    if choice == "1" {
+        io:println(" Starting Service Server on port 9090...");
+        io:println(" HTTP Service 'CarRentalService' is running");
+        io:println(" Server listening on http://localhost:9090");
+        io:println(" Use option 2 in another terminal to test client");
+        io:println("  Press Ctrl+C to stop the server");
+
+        // Display available operations
+        io:println("\n Available Service Operations:");
+        io:println("   • POST /grpcService/addCar - Admin adds new car");
+        io:println("   • POST /grpcService/createUsers - Create multiple users");
+        io:println("   • PUT /grpcService/updateCar - Admin updates car details");
+        io:println("   • DELETE /grpcService/removeCar/{plate} - Admin removes car");
+        io:println("   • GET /grpcService/listAvailableCars - List available cars");
+        io:println("   • GET /grpcService/searchCar/{plate} - Customer searches by plate");
+        io:println("   • POST /grpcService/addToCart - Customer adds car to cart");
+        io:println("   • POST /grpcService/placeReservation - Customer places reservation");
+
+        // Keep server running
+        while true {
+            // Server runs via the listener
+        }
+    } else if choice == "2" {
+        error? result = runGrpcClientDemo();
+        if result is error {
+            string errorMessage = result.message();
+            io:println("Error: " + errorMessage);
+        }
+    } else if choice == "3" {
+        runDemoMode();
+    } else if choice == "4" {
+        error? result = runInteractiveMenu();
+        if result is error {
+            string errorMessage = result.message();
+            io:println("Error: " + errorMessage);
+        }
+    } else {
+        io:println("Invalid choice. Running local demo mode...");
+        runDemoMode();
+    }
+
+    return ();
+}
