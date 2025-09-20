@@ -1,0 +1,22 @@
+Responsible for listing cars and managing the shopping cart.
+This part shows available cars,
+lets a user add them to a cart, and prepares them for reservation.
+
+    // Test ListAvailableCars
+    FilterRequest filterReq = {keyword: "Tesla", year: ()};
+    ListCarsResponse listResult = listAvailableCars(filterReq);
+    Car[] availableCars = listResult.cars;
+    string listMessage = listResult.message;
+    int availableCount = availableCars.length();
+    io:println(" ListAvailableCars: " + listMessage + " (" + availableCount.toString() + " cars)");
+
+    // Test AddToCart
+    CartItem cartItem = {
+        userId: "demo_customer",
+        plate: "TESLA01",
+        startDate: "2024-01-01",
+        endDate: "2024-01-06"
+    };
+    CartResponse cartResult = addToCart(cartItem);
+    string cartMessage = cartResult.message;
+    io:println(" AddToCart: " + cartMessage);
