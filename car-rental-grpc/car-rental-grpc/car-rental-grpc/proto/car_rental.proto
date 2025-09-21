@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package car_rental;
+
+service CarRentalService {
+    rpc AddCar(AddCarRequest) returns (CarResponse);
+    rpc CreateUsers(stream CreateUserRequest) returns (CreateUsersResponse);
+    rpc UpdateCar(UpdateCarRequest) returns (CarResponse);
+    rpc RemoveCar(PlateRequest) returns (RemoveCarResponse);
+    rpc ListAvailableCars(FilterRequest) returns (stream Car);
+    rpc SearchCar(PlateRequest) returns (CarResponse);
+    rpc AddToCart(CartItem) returns (CartResponse);
+    rpc PlaceReservation(ReservationRequest) returns (ReservationResponse);
+}
+
+message Car {
+    string make = 1;
+    string model = 2;
+    int32 year = 3;
+    double daily_price = 4;
+    int32 mileage = 5;
+    string plate = 6;
+    string status = 7;
+}
+
+message AddCarRequest {
+    string make = 1;
+    string model = 2;
+    int32 year = 3;
+    double daily_price = 4;
+    int32 mileage = 5;
+    string plate = 6;
+    string status = 7;
+}
+
+message CreateUserRequest {
+    string id = 1;
+    string name = 2;
+    string role = 3;
+}
+
+message UpdateCarRequest {
+    string plate = 1;
+    optional string make = 2;
+    optional string model = 3;
+    optional int32 year = 4;
+    optional double daily_price = 5;
+    optional int32 mileage = 6;
+    optional string status = 7;
+}
+
+message PlateRequest {
+    string plate = 1;
+}
+
+message FilterRequest {
+    string keyword = 1;
+    optional int32 year = 2;
+}
+
+message CartItem {
+    string user_id = 1;
+    string plate = 2;
+    string start_date = 3;
+    string end_date = 4;
+}
+
+message ReservationRequest {
+    string user_id = 1;
+}
+
+message CarResponse {
+    optional Car car = 1;
+    string message = 2;
+}
+
+message CreateUsersResponse {
+    string message = 1;
+    int32 users_created = 2;
+}
+
+message RemoveCarResponse {
+    string message = 1;
+    repeated Car remaining_cars = 2;
+}
+
+message CartResponse {
+    string message = 1;
+}
+
+message ReservationResponse {
+    string message = 1;
+    double total_price = 2;
+}
