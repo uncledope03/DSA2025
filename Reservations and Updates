@@ -1,0 +1,29 @@
+ReservationRequest reservationReq = {userId: "demo_customer"};
+ReservationResponse reservationResult = placeReservation(reservationReq);
+string reservationMessage = reservationResult.message;
+float totalPrice = reservationResult.totalPrice;
+io:println(" PlaceReservation: " + reservationMessage);
+io:println(" Total Price: $" + totalPrice.toString());
+
+// Test UpdateCar
+UpdateCarRequest updateReq = {
+plate: "TESLA01",
+make: (),
+model: (),
+year: (),
+dailyPrice: 120.0,
+mileage: (),
+status: ()
+};
+CarResponse updateResult = updateCar(updateReq);
+string updateMessage = updateResult.message;
+io:println(" UpdateCar: " + updateMessage);
+
+// Test RemoveCar
+PlateRequest removeReq = {plate: "XYZ789"};
+RemoveCarResponse removeResult = removeCar(removeReq);
+string removeMessage = removeResult.message;
+Car[] remainingCars = removeResult.remainingCars;
+int remainingCount = remainingCars.length();
+io:println(" RemoveCar: " + removeMessage + " (" + remainingCount.toString() + "
+remaining)");
