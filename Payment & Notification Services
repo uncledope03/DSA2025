@@ -1,0 +1,156 @@
+File: services/payment-service/Ballerina.toml
+toml
+[package]
+org = "transport"
+name = "payment_service"
+version = "0.1.0"
+
+[[dependency]]
+org = "ballerinax"
+name = "kafka"
+version = "3.0.0"
+
+[[dependency]]
+org = "ballerinax"
+name = "mongodb"
+version = "1.0.0"
+
+[[dependency]]
+org = "ballerina"
+name = "log"
+version = "2.10.0"
+File: services/payment-service/main.bal
+ballerina
+import ballerinax/kafka;
+import ballerinax/mongo;
+import ballerina/log;
+
+final mongo:Client dbClient = check new ("mongodb://admin:password@mongodb:27017", "transport");
+kafka:Producer paymentProducer = check new ("kafka:9092", "payments.processed");
+
+type PaymentRecord record {|
+    string paymentId;
+    string ticketId;
+    string passengerId;
+    decimal amount;
+    string status;
+    string processedAt;
+|};
+
+service kafka:Service on new kafka:Listener("kafka:9092", "ticket.requests", "payment-group") {
+    remote function onConsumerRecord(kafka:ConsumerRecord[] records) {
+        foreach var record in records {
+            json payload = check record.value;
+            string ticketId = check payload.ticketId.cloneWithType(string);
+            string passengerId = check payload.passengerId.cloneWithType(string);
+            decimal amount = check payload.amount.cloneWithType(decimal);
+            
+            boolean paymentSuccess = math:random() > 0.1;
+            string status = paymentSuccess ? "SUCCESS" : "FAILED";
+            
+            PaymentRecord payment = {
+                paymentId: string PAY${math:random()}.replace(".", ""),
+                ticketId: ticketId,
+                passengerId: passengerId,
+                amount: amount,
+                status: status,
+                processedAt: time:utcNow().toString()
+            };
+            
+            _ = check dbClient->insert("payments", payment);
+            
+            _ = check paymentProducer->send({
+                eventType: "PAYMENT_PROCESSED",
+                ticketId: ticketId,
+                passengerId: passengerId,
+                status: status,
+                paymentId: payment.paymentId
+            });
+            
+            log:printInfo("Payment processed: " + payment.paymentId + " - " + status);
+        }
+    }
+}
+File: services/payment-service/Dockerfile
+dockerfile
+FROM ballerina/ballerina:2201.8.0
+
+COPY . /home/ballerina
+WORKDIR /home/ballerina
+
+CMD ["bal", "run", "main.bal"]
+File: services/notification-service/Ballerina.toml
+toml
+[package]
+org = "transport"
+name = "notification_service"
+version = "0.1.0"
+
+[[dependency]]
+org = "ballerinax"
+name = "kafka"
+version = "3.0.0"
+
+[[dependency]]
+org = "ballerina"
+name = "log"
+version = "2.10.0"
+
+[[dependency]]
+org = "ballerina"
+name = "io"
+version = "1.4.0"
+File: services/notification-service/main.bal
+ballerina
+import ballerinax/kafka;
+import ballerina/log;
+import ballerina/io;
+
+service kafka:Service on new kafka:Listener("kafka:9092", ["schedule.updates", "payments.processed", "ticket.validations"], "notification-group") {
+    remote function onConsumerRecord(kafka:ConsumerRecord[] records) {
+        foreach var record in records {
+            json payload = check record.value;
+            string eventType = check payload.eventType.cloneWithType(string);
+            
+            match eventType {
+                "SERVICE_DISRUPTION" => {
+                    string message = check payload.message.cloneWithType(string);
+                    log:printWarn("SERVICE DISRUPTION: " + message);
+                    // In real system, send SMS/email to affected passengers
+                }
+                "TRIP_CREATED" => {
+                    string tripId = check payload.tripId.cloneWithType(string);
+                    log:printInfo("New trip scheduled: " + tripId);
+                }
+                "PAYMENT_PROCESSED" => {
+                    string ticketId = check payload.ticketId.cloneWithType(string);
+                    string status = check payload.status.cloneWithType(string);
+                    if status == "SUCCESS" {
+                        log:printInfo("Payment successful for ticket: " + ticketId);
+                        // Send confirmation notification
+                    } else {
+                        log:printWarn("Payment failed for ticket: " + ticketId);
+                    }
+                }
+                "TICKET_VALIDATED" => {
+                    string ticketId = check payload.ticketId.cloneWithType(string);
+                    log:printInfo("Ticket validated: " + ticketId);
+                }
+                _ => {
+                    log:printInfo("Unknown event type: " + eventType);
+                }
+            }
+            
+            // Print notification to console (simulate real notification)
+            io:println("NOTIFICATION: " + eventType + " - " + payload.toString());
+        }
+    }
+}
+File: services/notification-service/Dockerfile
+dockerfile
+FROM ballerina/ballerina:2201.8.0
+
+COPY . /home/ballerina
+WORKDIR /home/ballerina
+
+CMD ["bal", "run", "main.bal"]
