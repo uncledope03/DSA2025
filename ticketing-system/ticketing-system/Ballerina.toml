@@ -1,0 +1,9 @@
+[package]
+org = "windhoek"
+name = "ticketing_system"
+version = "1.0.0"
+
+[[platform.java11.dependency]]
+groupId = "org.mariadb.jdbc"
+artifactId = "mariadb-java-client"
+version = "3.0.8"
